@@ -1,0 +1,68 @@
+services:
+  db:
+    # We use a mariadb image which supports both amd64 & arm64 architecture
+    # image: mariadb:10-focal
+    # If you really want to use MySQL, uncomment the following line
+    image: mysql:8
+    # command: '--default-authentication-plugin=mysql_native_password'
+    restart: always
+    healthcheck:
+      test: ['CMD-SHELL', 'mysqladmin ping --password="password" --silent']
+      interval: 3s
+      retries: 5
+      start_period: 90s
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./static:/docker-entrypoint-initdb.d
+    networks:
+      - backnet
+    env_file:
+      - .env
+    expose:
+      - 3306
+      - 33060
+
+  web:
+    build:
+      context: .
+      dockerfile: .docker/web/Dockerfile
+      target: builder
+    restart: always
+    ports:
+      - 5000:5000
+    networks:
+      - backnet
+      - frontnet
+    depends_on:
+      db:
+        condition: service_healthy
+
+  bot:
+    build:
+      context: .
+      dockerfile: .docker/bot/Dockerfile
+      target: builder
+    restart: always
+    networks:
+      - backnet
+    depends_on:
+      db:
+        condition: service_healthy
+
+  nginx:
+    build:
+      context: .docker/nginx
+    restart: always
+    ports:
+      - 8080:80
+    depends_on: 
+      - web
+    networks:
+      - frontnet
+
+volumes:
+  db-data:
+
+networks:
+  backnet:
+  frontnet:
