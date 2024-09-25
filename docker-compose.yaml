@@ -12,7 +12,7 @@ services:
       start_period: 600s
     volumes:
       - db-data:/var/lib/mysql
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./static:/docker-entrypoint-initdb.d
     networks:
       - backnet
     env_file:
@@ -71,5 +71,4 @@ volumes:
 
 networks:
   backnet:
-    internal: true
   frontnet:
