@@ -1,9 +1,9 @@
 # Standard imports
-import json
 import os
 
 # Third-party imports
 import discord
+from dotenv import load_dotenv
 
 # Local imports
 from channel_check import update_channel  # update_channel程式從core目錄底下引入
@@ -15,15 +15,23 @@ intt.members = True
 intt.message_content = True
 bot = discord.Bot(intents=intt)
 
-# 變更目前位置到專案根目錄（SCAICT-DISCORD-BOT 資料夾），再找檔案
-os.chdir("./")
-with open(f"{os.getcwd()}/token.json", "r", encoding="utf-8") as file:
-    token = json.load(file)
 
 for filename in os.listdir(f"{os.getcwd()}/cog"):
     if filename.endswith(".py"):
         bot.load_extension(f"cog.{filename[:-3]}")
         print(f"📖 {filename} loaded")  # test
+
+
+@bot.command()
+async def load(ctx, extension):
+    bot.load_extension(f"cog.{extension}")
+    await ctx.send(f"📖 {extension} loaded")
+
+
+@bot.command()
+async def unload(ctx, extension):
+    bot.unload_extension(f"cog.{extension}")
+    await ctx.send(f"📖 {extension} unloaded")
 
 
 @bot.event
@@ -36,4 +44,6 @@ async def on_ready():
 
 
 if __name__ == "__main__":
-    bot.run(token["discord_token"])
+    load_dotenv(f"{os.getcwd()}/.env", verbose=True, override=True)
+    bot_token = os.getenv("DISCORD_TOKEN")
+    bot.run(bot_token)

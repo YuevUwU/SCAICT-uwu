@@ -1,4 +1,4 @@
-name: Pylint
+name: Python unittest
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == true
+    if: (github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork == true)
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -23,6 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r requirements_dev.txt
-      - name: Analysing the code with Pylint
+      - name: Analysing the code with Python unittest
         run: |
-          pylint $(git ls-files '*.py')
+          python -m unittest $(git ls-files 'cog/tests/*.py')
+          python -m unittest $(git ls-files 'tests/unittest/*.py')
